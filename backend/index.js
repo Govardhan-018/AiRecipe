@@ -151,6 +151,7 @@ app.post('/delete', async (req, res) => {
             chat_history.push({ role: "user", content: message });
         } catch (err) {
             console.error('Error fetching chat history:', err);
+            return res.status(500).json({ reply: 'Error fetching chat history.' });
         }
 
         try {

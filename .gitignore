@@ -1,0 +1,38 @@
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# dotenv
+.env
+
+# Logs
+logs/
+*.log
+*.log.*
+
+# OS-specific
+.DS_Store
+Thumbs.db
+
+# VSCode
+.vscode/
+
+# Optional: If using Live Server or temporary local server
+*.local
+*.tmp
+
+# Build artifacts (if any in future)
+dist/
+build/
+
+# PostgreSQL dumps
+*.sql
+*.dump
+
+# Screenshots or media backups
+screenshots/
+*.png
+*.jpg
+*.jpeg
