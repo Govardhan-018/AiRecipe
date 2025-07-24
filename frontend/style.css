@@ -1,13 +1,23 @@
+@import url('https://fonts.googleapis.com/css2?family=Bitcount+Prop+Single:wght@100..900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Ubuntu:ital,wght@0,300;0,400;0,500;0,700;1,300;1,400;1,500;1,700&display=swap');
+
 * {
     margin: 0;
     padding: 0;
     box-sizing: border-box;
+    font-family: "Ubuntu", sans-serif;
 }
 
 body {
     background: #fff;
     color: #18181b;
     font-family: 'Segoe UI', 'Roboto', Arial, sans-serif;
+}
+
+.rsp {
+    font-family: "Bitcount Prop Single", system-ui;
+    margin-left: 15px;
+    margin-bottom: 0%;
 }
 
 .nav {
@@ -25,7 +35,7 @@ body {
     font-weight: bold;
     letter-spacing: 2px;
     z-index: 10;
-    box-shadow: 0 2px 8px rgba(24,24,27,0.12);
+    box-shadow: 0 2px 8px rgba(24, 24, 27, 0.12);
 }
 
 .box {
@@ -46,7 +56,7 @@ body {
     left: 0;
     position: fixed;
     border-radius: 0px 40px 40px 0px;
-    box-shadow: 2px 0 12px rgba(24,24,27,0.10);
+    box-shadow: 2px 0 12px rgba(24, 24, 27, 0.10);
     color: #23232b;
     padding-top: 30px;
 }
@@ -101,7 +111,7 @@ body {
     outline: none;
     background: #f3f3f3;
     color: #18181b;
-    box-shadow: 0 1px 4px rgba(24,24,27,0.10);
+    box-shadow: 0 1px 4px rgba(24, 24, 27, 0.10);
     transition: background 0.2s;
 }
 
@@ -123,7 +133,7 @@ body {
     color: #fff;
     font-size: 1.5rem;
     font-weight: bold;
-    box-shadow: 0 2px 8px rgba(24,24,27,0.10);
+    box-shadow: 0 2px 8px rgba(24, 24, 27, 0.10);
 }
 
 #send-btn:hover {
@@ -142,7 +152,7 @@ body {
     margin: 8px 0;
     max-width: 60%;
     word-break: break-word;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
     transition: background 0.2s, color 0.2s;
 }
 
@@ -160,7 +170,7 @@ body {
     margin: 8px 0;
     max-width: 60%;
     word-break: break-word;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.07);
     transition: background 0.2s, color 0.2s;
 }
 
@@ -180,7 +190,7 @@ body {
     margin: auto;
 }
 
-#view-history-btn {
+.bar-btn {
     margin: 20px auto;
     padding: 10px;
     width: 90%;
@@ -194,8 +204,28 @@ body {
     transition: background 0.2s, color 0.2s;
 }
 
-#view-history-btn:hover {
+.bar-btn:hover {
     background: #fff;
     color: #23232b;
     border: 1px solid #23232b;
+}
+
+.loading {
+    height: 30px;
+    width: 60px;
+    animation: bgChange 1s infinite;
+}
+
+@keyframes bgChange {
+    0% {
+        background-color: #f3f3f3;
+    }
+
+    50% {
+        background-color: #e0e0e0;
+    }
+
+    100% {
+        background-color: #f3f3f3;
+    }
 }

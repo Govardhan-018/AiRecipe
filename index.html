@@ -1,11 +1,83 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AgoR</title>
+    <title>WelcomPage</title>
+    <link rel="stylesheet" href="./frontend/style2.css">
 </head>
+
 <body>
-    
+    <nav class="nav">AI <h1 class="rsp">RSP</h1>
+    </nav>
+    <div class="container">
+        <div class="welcome-message" id="container">
+            <h1>Welcome to AI Recipe Maker</h1>
+            <p>Start creating your favorite recipes with the help of AI!</p>
+            <div class="buttons">
+                <button id="login" class="bt">Login</button>
+                <button id="signin" class="bt">Signin</button>
+            </div>
+        </div>
+        <div class ="more-info">
+        <h2>More info</h2>
+        <button id="scroll-down"><img src="./frontend/images/arrow_downward.svg" alt=""></button>
+        </div>
+    </div>
+    <div class="info">
+        <h2>About AI Recipe Maker</h2>
+        <p>
+            <strong>AI Recipe Maker</strong> is a web application that helps users create and manage recipes using AI-powered chat. It features user authentication, chat history, and recipe suggestions.
+        </p>
+        <h3>Frontend</h3>
+        <ul>
+            <li><strong>index.html</strong>: Main landing page with login and signup options, and a scroll-down button to view project info.</li>
+            <li><strong>style2.css</strong>: Modern responsive styles for layout, navigation, container, info section, buttons, and forms.</li>
+            <li><strong>script2.js</strong>: Handles login, signup, encryption, and scroll-down functionality. Communicates with the backend for authentication and registration.</li>
+            <li><strong>script.js</strong>: Manages chat interactions, message display, chat history, deletion, and logout. Uses sessionStorage for authentication key and communicates with backend endpoints.</li>
+        </ul>
+        <h3>Backend</h3>
+        <ul>
+            <li><strong>index.js</strong>: Node.js Express server with PostgreSQL integration. Handles user authentication, registration, chat message processing, chat history, and deletion. Integrates with OpenRouter AI for recipe suggestions.</li>
+            <li>Endpoints:
+                <ul>
+                    <li><code>/signup</code>: Registers new users (encrypted email/password).</li>
+                    <li><code>/login</code>: Authenticates users and returns success status.</li>
+                    <li><code>/chat</code>: Processes user messages, fetches AI response, and stores chat history.</li>
+                    <li><code>/history</code>: Returns chat history for authenticated users.</li>
+                    <li><code>/delete</code>: Deletes chat history for authenticated users.</li>
+                </ul>
+            </li>
+            <li>Uses custom encryption/decryption for user credentials.</li>
+            <li>Stores users and messages in PostgreSQL database.</li>
+        </ul>
+        <h3>Features</h3>
+        <ul>
+            <li>Modern UI with responsive design and smooth scrolling.</li>
+            <li>Secure login and signup with encrypted credentials.</li>
+            <li>AI-powered chat for recipe creation and suggestions.</li>
+            <li>Chat history management (view and delete).</li>
+            <li>Session-based authentication using encrypted keys.</li>
+        </ul>
+        <h3>Tech Stack</h3>
+        <ul>
+            <li>Frontend: HTML, CSS, JavaScript</li>
+            <li>Backend: Node.js, Express, PostgreSQL</li>
+            <li>AI Integration: OpenRouter API</li>
+        </ul>
+        <h3>How to Use</h3>
+        <ol>
+            <li>Sign up or log in with your email and password.</li>
+            <li>Start chatting with the AI to create or get recipe suggestions.</li>
+            <li>View your chat history or delete it as needed.</li>
+            <li>Scroll down for more information about the project.</li>
+        </ol>
+        <p>
+            <em>Created by using modern web technologies and AI integration for a seamless recipe creation experience.
+        </p>
+    </div>
+    <script src="./frontend/script2.js"></script>
 </body>
+
 </html>
