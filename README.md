@@ -113,6 +113,7 @@ Create a `.env` file in the `backend/` folder with:
 ```env
 OPENROUTER_API_KEY=your_openrouter_api_key_here
 ```
+Open [openrouter](https://openrouter.ai/settings/keys) and get your key and create a .env file and past it like above.
 
 ### 4. Start the backend server
 
