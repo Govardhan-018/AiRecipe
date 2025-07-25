@@ -2,6 +2,18 @@ const loginForm = document.getElementById('login');
 const signupForm = document.getElementById('signin');
 const container = document.getElementById('container');
 const scrollDown = document.getElementById('scroll-down');
+let ip, loginURL, signupURL;
+fetchIP();
+async function fetchIP() {
+    try {
+        const response = await fetch("../ip.txt");
+        ip = await response.text()
+        loginURL = `http://${ip}:3069/login`;
+        signupURL = `http://${ip}:3069/signup`;
+    } catch (error) {
+        console.error("Could not fetch IP:", error);
+    }
+}
 
 function login() {
     container.innerHTML = `<h1>Login</h1>
@@ -18,7 +30,7 @@ function login() {
         const password = document.getElementById('password').value;
         const encryptedData = customEncrypt(email, password, 42);
         try {
-            const response = await fetch('http://192.168.1.7:3069/login', {
+            const response = await fetch(loginURL, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ data: encryptedData })
@@ -70,13 +82,15 @@ function signup() {
         const password = document.getElementById('password').value;
         const encryptedData = customEncrypt(email, password, 42);
         try {
-            const response = await fetch('http://192.168.1.7:3069/signup', {
+            const response = await fetch(signupURL, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ data: encryptedData })
             });
             const result = await response.json();
             if (result.success) {
+                alert("Signup successful! You can now log in.");
+
                 const newWindow = window.open("./frontend/index.html", '_self');
                 if (newWindow) {
                     newWindow.addEventListener("load", () => {

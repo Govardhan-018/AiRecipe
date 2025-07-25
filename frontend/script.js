@@ -5,9 +5,21 @@ const view_history = document.getElementById('view-history-btn');
 const delete_history = document.getElementById('delete-history-btn');
 const logout_btn = document.getElementById('logout-btn');
 let key = sessionStorage.getItem("key") || '';
-const serverURL1 = 'http://192.168.1.7:3069/chat';
-const serverURL2 = 'http://192.168.1.7:3069/history';
-const serverURL3 = 'http://192.168.1.7:3069/delete';
+let ip, serverURL1, serverURL2, serverURL3
+
+fetchIP();
+async function fetchIP() {
+    try {
+        const response = await fetch("../ip.txt");
+        ip = await response.text()
+        serverURL1 = `http://${ip}:3069/chat`;
+        serverURL2 = `http://${ip}:3069/history`;
+        serverURL3 = `http://${ip}:3069/delete`;
+    } catch (error) {
+        console.error("Could not fetch IP:", error);
+    }
+}
+
 
 window.addEventListener("message", (event) => {
     console.log("Received message event:", event.data);
