@@ -4,7 +4,6 @@ const chat_submit = document.getElementById('send-btn');
 const view_history = document.getElementById('view-history-btn');
 const delete_history = document.getElementById('delete-history-btn');
 const logout_btn = document.getElementById('logout-btn');
-let key = sessionStorage.getItem("key") || '';
 let ip, serverURL1, serverURL2, serverURL3
 
 fetchIP();
@@ -21,32 +20,6 @@ async function fetchIP() {
 }
 
 
-window.addEventListener("message", (event) => {
-    console.log("Received message event:", event.data);
-    const receivedData = event.data;
-    if (receivedData && receivedData.key) {
-        console.log("Key received from message:", receivedData.key);
-        key = receivedData.key;
-        sessionStorage.setItem("key", key);
-        initializePageWithKey();
-    }
-});
-
-window.addEventListener("DOMContentLoaded", () => {
-    console.log("DOM fully loaded");
-    const navType = performance.getEntriesByType("navigation")[0].type;
-    if (navType === "reload") {
-        const storedKey = sessionStorage.getItem("key");
-        console.log("Page reloaded, stored key:", storedKey);
-        if (storedKey) {
-            key = storedKey;
-            initializePageWithKey();
-        } else {
-            console.warn("Reload detected, but no key stored.");
-        }
-    }
-})
-
 function addMessage(role, content) {
     const messageDiv = document.createElement('div');
     messageDiv.className = role === 'user' ? 'user-message' : 'bot-message';
@@ -56,10 +29,6 @@ function addMessage(role, content) {
 }
 
 async function handleSend() {
-    if (!key || key.trim() === '') {
-        addMessage('bot', 'Please log in first...');
-        return;
-    }
     const message = chat_input.value.trim();
     if (message === '') return;
 
@@ -72,7 +41,8 @@ async function handleSend() {
         const response = await fetch(serverURL1, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ message: message, key: key })
+            body: JSON.stringify({ message: message }),
+            credentials: 'include'
         });
 
         const data = await response.json();
@@ -93,7 +63,7 @@ view_history.addEventListener('click', async () => {
         const response = await fetch(serverURL2, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ key: key })
+            credentials: 'include'
         });
         const messages = await response.json();
 
@@ -109,15 +79,11 @@ view_history.addEventListener('click', async () => {
 });
 
 delete_history.addEventListener('click', async () => {
-    if (!key || key.trim() === '') {
-        addMessage('bot', 'No key provided for deletion.');
-        return;
-    }
     try {
         const response = await fetch(serverURL3, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ key: key })
+            credentials: 'include'
         });
         const data = await response.json();
         if (data.success) {
@@ -129,18 +95,10 @@ delete_history.addEventListener('click', async () => {
         addMessage('bot', 'Error connecting to the server.');
     }
 })
-logout_btn.addEventListener('click', () => {
-    sessionStorage.removeItem("key");
-    window.open('../index.html', '_self');
+logout_btn.addEventListener('click', async () => {
+    await fetch(`http://${ip}:3069/logout`, {
+        method: 'POST',
+        credentials: 'include'
+    });
+    window.location.href = `http://${ip}:3000/index.html`;
 });
-function initializePageWithKey() {
-    console.log("Initializing page with key:", key);
-    if (key && key.trim() !== '') {
-        view_history.style.display = 'block';
-        delete_history.style.display = 'block';
-    } else {
-        view_history.style.display = 'none';
-        delete_history.style.display = 'none';
-    }
-}
-initializePageWithKey();
