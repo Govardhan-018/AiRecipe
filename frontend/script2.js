@@ -28,44 +28,24 @@ function login() {
         e.preventDefault();
         const email = document.getElementById('email').value;
         const password = document.getElementById('password').value;
-        const encryptedData = customEncrypt(email, password, 42);
         try {
             const response = await fetch(loginURL, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ data: encryptedData })
+                body: JSON.stringify({ email: email, password: password }),
+                credentials: 'include'
             });
             const result = await response.json();
             if (result.success) {
-                const newWindow = window.open("./frontend/index.html");
-                if (newWindow) {
-                    newWindow.addEventListener("load", () => {
-                        newWindow.postMessage({ key: encryptedData }, "*");
-                    });
-                } else {
-                    alert("Popup blocked. Please allow popups for this site.");
-                }
+                window.location.href = "./frontend/index.html";
             }
         } catch (error) {
-            console.error("Login failed:", error, email, pass);
             alert("Login failed. Please try again.");
             document.getElementById('email').value = '';
             document.getElementById('password').value = '';
         }
 
     })
-}
-function customEncrypt(email, password, key = 7) {
-    const combined = `${email}::${password}`;
-    let encrypted = '';
-
-    for (let i = 0; i < combined.length; i++) {
-        let charCode = combined.charCodeAt(i);
-        charCode = (charCode + key + i) % 256;
-        encrypted += String.fromCharCode(charCode);
-    }
-
-    return btoa(encrypted);
 }
 function signup() {
     container.innerHTML = `<h1>Sign Up</h1>
@@ -80,25 +60,19 @@ function signup() {
         e.preventDefault();
         const email = document.getElementById('email').value;
         const password = document.getElementById('password').value;
-        const encryptedData = customEncrypt(email, password, 42);
         try {
             const response = await fetch(signupURL, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ data: encryptedData })
+                body: JSON.stringify({ email: email, password: password }),
+                credentials: 'include'  
             });
             const result = await response.json();
             if (result.success) {
                 alert("Signup successful! You can now log in.");
-
-                const newWindow = window.open("./frontend/index.html", '_self');
-                if (newWindow) {
-                    newWindow.addEventListener("load", () => {
-                        newWindow.postMessage({ key: encryptedData }, "*");
-                    });
-                } else {
-                    alert("Popup blocked. Please allow popups for this site.");
-                }
+                window.location.href = "./frontend/index.html";
+            } else {
+                alert("Popup blocked. Please allow popups for this site.");
             }
         } catch (error) {
             console.error("Signin failed:", error, email, password);
