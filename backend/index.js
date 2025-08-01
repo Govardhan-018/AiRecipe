@@ -24,11 +24,11 @@ const app = express();
 const PORT = 3069;
 
 const pool = new Pool({
-    user: 'postgres',
-    host: 'localhost',
-    database: 'AI_RESP',
-    password: 'gova123',
-    port: 5432,
+    user: process.env.USER,
+    host: process.env.HOST,
+    database: process.env.DATABASE,
+    password: process.env.PASSWORD,
+    port: process.env.PORT,
 });
 app.use(session({
     secret: 'your_secret_key',
