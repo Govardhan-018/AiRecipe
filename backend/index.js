@@ -9,6 +9,11 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
+import bcrypt from 'bcrypt';
+import session from 'express-session';
+import pkg from 'passport-local';
+const { Strategy: LocalStatergy } = pkg;
+import passport from 'passport';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -25,9 +30,21 @@ const pool = new Pool({
     password: 'gova123',
     port: 5432,
 });
+app.use(session({
+    secret: 'your_secret_key',
+    resave: false,
+    saveUninitialized: false
+}))
 
-app.use(cors());
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(passport.initialize());
+app.use(passport.session());
 app.use(bodyParser.json());
+app.use(cors({
+    origin:true,
+    credentials: true
+}));
 
 function getLocalIPAddress() {
     const interfaces = os.networkInterfaces();
@@ -41,51 +58,33 @@ function getLocalIPAddress() {
     return 'localhost';
 }
 
-function customDecrypt(encryptedBase64, key = 7) {
-    const encrypted = Buffer.from(encryptedBase64, 'base64').toString('binary');
-    let decrypted = '';
-    for (let i = 0; i < encrypted.length; i++) {
-        let charCode = encrypted.charCodeAt(i);
-        charCode = (charCode - key - i + 256) % 256;
-        decrypted += String.fromCharCode(charCode);
-    }
-    return decrypted;
-}
-
 // Returns chat history for a user if key is valid
 app.post('/history', async (req, res) => {
-    const key = req.body.key;
-    if (!key || key.trim() === '') {
-        return res.status(400).json({ error: 'Empty key not allowed' });
-    }
-    let op = customDecrypt(key, 42);
-    let [email, pass] = op.split("::");
-    if (!email || !pass) {
-        return res.status(400).json({ error: 'Invalid data format' });
-    }
+    const email = req.user.email;
     try {
         const result = await pool.query('SELECT * FROM messages WHERE email = $1', [email]);
         res.status(200).json(result.rows);
     } catch (err) {
-        console.error(err);
         res.status(500).json({ error: 'Failed to load history' });
     }
 })
 
 // Registers a new user
 app.post('/signup', async (req, res) => {
-    const data = req.body.data;
-    if (!data || data.trim() === '') {
-        return res.status(400).json({ error: 'Empty data not allowed' });
-    }
-    let op = customDecrypt(data, 42);
-    let [email, pass] = op.split("::");
+    const email = req.body.email;
+    let pass = req.body.password;
     if (!email || !pass) {
         return res.status(400).json({ error: 'Invalid data format' });
     }
     try {
-        await pool.query('INSERT INTO users (email, password) VALUES ($1, $2)', [email, pass]);
-        res.status(200).json({ success: true });
+        pass = await bcrypt.hash(pass, 10);
+        const existingUser = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
+        if (existingUser.rows.length > 0) {
+            return res.status(400).json({ error: 'User already exists' });
+        } else {
+            await pool.query('INSERT INTO users (email, password) VALUES ($1, $2)', [email, pass]);
+            res.status(200).json({ success: true });
+        }
     } catch (err) {
         console.error(err);
         res.status(500).json({ error: 'Failed to sign up' });
@@ -93,65 +92,39 @@ app.post('/signup', async (req, res) => {
 });
 
 app.post('/delete', async (req, res) => {
-    const key = req.body.key;
-    if (!key || key.trim() === '') {
-        return res.status(400).json({ error: 'Empty key not allowed' });
-    }
-    let op = customDecrypt(key, 42);
-    let [email, pass] = op.split("::");
-    if (!email || !pass) {
-        return res.status(400).json({ error: 'Invalid key format' });
-    }
+    const email = req.user.email;
     try {
         await pool.query('DELETE FROM messages WHERE email = $1', [email]);
         res.status(200).json({ success: true });
     } catch (err) {
-        console.error(err);
-        res.status(500).json({ success: false, error: 'Failed to delete history' });
+        res.status(500).json({ error: 'Failed to delete history' });
     }
 });
 
 // Authenticates a user
-app.post('/login', async (req, res) => {
-    const data = req.body.data;
-    if (!data || data.trim() === '') {
-        return res.status(400).json({ error: 'Empty data not allowed' });
-    }
-    let op = customDecrypt(data, 42);
-    let [email, pass] = op.split("::");
-    if (!email || !pass) {
-        return res.status(400).json({ error: 'Invalid data format' });
-    }
-    try {
-        const result = await pool.query('SELECT * FROM users WHERE email = $1 AND password = $2', [email, pass]);
-        if (result.rows.length > 0) {
-            res.status(200).json({ success: true });
-        } else {
-            res.status(401).json({ error: 'Invalid email or password' });
-        }
-    } catch (err) {
-        console.error(err);
-        res.status(500).json({ error: 'Failed to log in' });
-    }
+app.post('/login', async (req, res, next) => {
+    passport.authenticate('local', (err, user, info) => {
+        if (err) return next(err)
+        if (!user) return res.status(401).json({ error: info.message || 'Authentication failed' });
+
+        req.logIn(user, (err) => {
+            if (err) return next(err);
+            res.status(200).json({ success: true, email: user.email });
+        });
+    })(req, res, next);
 });
 
+function isAuthenticated(req, res, next) {
+    if (req.isAuthenticated()) return next();
+    res.status(401).json({ error: 'Unauthorized' });
+}
+
 // Handles chat messages and OpenRouter API integration
-app.post('/chat', async (req, res) => {
+app.post('/chat', isAuthenticated, async (req, res) => {
     const userMessage = req.body.message;
-    const key = req.body.key;
+    const email = req.user.email;
 
-    if (!key || key.trim() === '') {
-        return res.status(400).json({ error: 'Empty key not allowed' });
-    }
-
-    let decrypted = customDecrypt(key, 42);
-    let [email, pass] = decrypted.split("::");
-
-    if (!email || !pass) {
-        return res.status(400).json({ error: 'Invalid key format' });
-    }
-
-    if (!userMessage || userMessage.trim() === '') {
+    if (!userMessage || userMessage.trim() === '' || !email) {
         return res.status(400).json({ error: 'Empty message not allowed' });
     }
 
@@ -169,7 +142,7 @@ app.post('/chat', async (req, res) => {
             content: row.content
         }));
         chat_history.push({ role: "user", content: message });
-        chat_history.push({ role: "developer", content: "if above last question or prompt from user is not related to cooking or food then reply sorry i cant help " }); 
+        chat_history.push({ role: "developer", content: "if above last question or prompt from user is not related to cooking or food then reply sorry i cant help " });
     } catch (err) {
         console.error('Error fetching chat history:', err);
         return res.status(500).json({ reply: 'Error fetching chat history.' });
@@ -204,6 +177,50 @@ app.post('/chat', async (req, res) => {
     } catch (err) {
         console.error('Error in chat flow:', err);
         res.status(500).json({ reply: 'Error processing your request.' });
+    }
+});
+
+app.post('/logout', (req, res) => {
+    req.logout((err) => {
+        if (err) {
+            return res.status(500).json({ error: 'Failed to log out' });
+        }
+        res.status(200).json({ success: true });
+    });
+});
+
+passport.use(new LocalStatergy({
+    usernameField: 'email',
+    passwordField: 'password',
+}, async (email, password, done) => {
+    try {
+        const result = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
+        if (result.rows.length === 0) {
+            return done(null, false, { message: 'User not found' });
+        }
+        const user = result.rows[0];
+        const isMatch = await bcrypt.compare(password, user.password);
+        if (!isMatch) {
+            return done(null, false, { message: 'Invalid password' });
+        }
+        return done(null, user);
+
+    } catch (err) {
+        return done(err);
+    }
+}))
+passport.serializeUser((user, done) => {
+    done(null, user.email);
+});
+passport.deserializeUser(async (email, done) => {
+    try {
+        const result = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
+        if (result.rows.length === 0) {
+            return done(null, false);
+        }
+        done(null, result.rows[0]);
+    } catch (err) {
+        done(err);
     }
 });
 
